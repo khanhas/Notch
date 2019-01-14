@@ -9,7 +9,7 @@ https://github.com/khanhas/Notch/releases
 - ImageMagick: https://www.imagemagick.org/script/download.php#windows
 
 
-![img1](https://i.imgur.com/poJEdkA.png)
+![img1](https://i.imgur.com/fy2FPjN.png)
 ![img2](https://i.imgur.com/FrkJ9Ig.jpg)
 ![img3](https://i.imgur.com/3VEbQjK.jpg)
 ![img4](https://i.imgur.com/A3VpytK.jpg)
