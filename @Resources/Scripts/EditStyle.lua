@@ -297,23 +297,25 @@ function slideEdit(mouseX)
 	local percent = clamp(mouseX - startX, 0, 150) / 150
 
 	if editVar == 'Bar_Opacity' then
-		sendValue( string.format('%02x',round(percent * 255)))
+		sendValue(editVar, string.format('%02x',round(percent * 255)))
+		sendValue('Bar_Opacity_Percent', round(percent * 100))
 	else
-		sendValue( round( percent * SKIN:GetVariable(maxVar)))
+		sendValue(editVar, round( percent * SKIN:GetVariable(maxVar)))
 	end
 end
 
 function scrollEdit(a)
 	if editVar == 'Bar_Opacity' then
 		local cur = tonumber(SKIN:GetVariable(editVar), 16) + a
-		sendValue( string.format('%02x',clamp(cur, 0, 255)))
+		sendValue(editVar, string.format('%02x',clamp(cur, 0, 255)))
+		sendValue('Bar_Opacity_Percent', clamp(cur, 0, 100))
 	else
 		local cur = SKIN:GetVariable(editVar) + a
-		sendValue( clamp(cur , 0, tonumber(SKIN:GetVariable(maxVar))))
+		sendValue(editVar, clamp(cur , 0, tonumber(SKIN:GetVariable(maxVar))))
 	end
 end
 
-function sendValue(val)
+function sendValue(editVar, val)
 	SKIN:Bang('!SetVariable', editVar, val)
 	SKIN:Bang('!WriteKeyValue', 'Variables', editVar, val, "#ROOTCONFIGPATH#Themes\\#Theme#\\Config\\Config.inc")
 end
