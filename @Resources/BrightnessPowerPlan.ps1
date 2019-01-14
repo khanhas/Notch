@@ -36,15 +36,18 @@ function SetPlanMeter {
     $index = 0
     (powercfg /l) | Where-Object {$_.Contains('GUID')} | ForEach-Object {
         $index++
-        $plan = $_.Split()
-        $guid = $plan[3]
-        $name = $plan[5].SubString(1, $plan[5].Length - 2)
+        $_ -match "\((.*)\)"
+        $name = $Matches[1]
+        $isActive = $_.Contains("*")
+        $guid = $_.Split()[3]
+
         $RmAPI.Bang("!SetOption Powerplan$index Text `"$name`"")
         $RmAPI.Bang("!ShowMeter Powerplan$index")
-        if ($plan.Length -eq 6) {
-            $RmAPI.Bang("!SetOption Powerplan$index LeftMouseUpAction `"`"`"[!CommandMeasure PSRM `"SetActivePlan $guid`"][!Update]`"`"`"")
-        } else {
+        if ($isActive) {
             $RmAPI.Bang("!SetVariable Active $index")
+            $RmAPI.Bang("!SetOption Powerplan$index LeftMouseUpAction `"`"")
+        } else {
+            $RmAPI.Bang("!SetOption Powerplan$index LeftMouseUpAction `"`"`"[!CommandMeasure PSRM `"SetActivePlan $guid`"][!Update]`"`"`"")
         }
     }
 
