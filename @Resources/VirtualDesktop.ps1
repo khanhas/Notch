@@ -1,13 +1,26 @@
 # Author: Markus Scholtes, 2017/05/08
-# Version 2.0 - Support for Windows 10 1803, 2018/06/18
+# Version 2.1.1 - Support for ISE and RunSpaces, 2018/10/22
 
-if ([Environment]::OSVersion.Version.Major -lt 10)
+# prefer $PSVersionTable.BuildVersion to [Environment]::OSVersion.Version
+# since a wrong Windows version might be returned in RunSpaces
+if ($PSVersionTable.PSVersion.Major -lt 6)
+{ # Powershell 5.x
+	$OSVer = $PSVersionTable.BuildVersion.Major
+	$OSBuild = $PSVersionTable.BuildVersion.Build
+}
+else
+{ # Powershell 6.x
+	$OSVer = [Environment]::OSVersion.Version.Major
+	$OSBuild = [Environment]::OSVersion.Version.Build
+}
+
+if ($OSVer -lt 10)
 {
 	Write-Error "Windows 10 or above is required to run this script"
 	exit -1
 }
 
-if ([Environment]::OSVersion.Version.Build -lt 14393)
+if ($OSBuild -lt 14393)
 {
 	Write-Error "Windows 10 1607 or above is required to run this script"
 	exit -1
@@ -15,12 +28,19 @@ if ([Environment]::OSVersion.Version.Build -lt 14393)
 
 $Windows1607 = $TRUE
 $Windows1803 = $FALSE
-if ([Environment]::OSVersion.Version.Build -ge 17134)
+$Windows1809 = $FALSE
+if ($OSBuild -ge 17134)
 {
 	$Windows1607 = $FALSE
 	$Windows1803 = $TRUE
+	$Windows1809 = $FALSE
 }
-
+if ($OSBuild -ge 17661)
+{
+	$Windows1607 = $FALSE
+	$Windows1803 = $FALSE
+	$Windows1809 = $TRUE
+}
 
 Add-Type -Language CSharp -TypeDefinition @"
 using System;
@@ -82,6 +102,10 @@ $(if ($Windows1803) {@"
 // Windows 10 1803:
 	[Guid("871F602A-2B58-42B4-8C4B-6C43D642C06F")]
 "@ })
+$(if ($Windows1809) {@"
+// Windows 10 1809:
+	[Guid("372E1D3B-38D3-42E4-A15B-8AB2B178F513")]
+"@ })
 	internal interface IApplicationView
 	{
 		int SetFocus();
@@ -137,11 +161,36 @@ $(if ($Windows1803) {@"
 		int Unknown3(out int unknown);
 		int Unknown4(out int unknown);
 "@ })
+$(if ($Windows1809) {@"
+		int Unknown1(out int unknown);
+		int Unknown2(out int unknown);
+		int Unknown3(out int unknown);
+		int Unknown4(out int unknown);
+		int Unknown5(out int unknown);
+		int Unknown6(int unknown);
+		int Unknown7();
+		int Unknown8(out int unknown);
+		int Unknown9(int unknown);
+		int Unknown10(int unknownX, int unknownY);
+		int Unknown11(int unknown);
+		int Unknown12(out Size size1);
+"@ })
 	}
 
 	[ComImport]
 	[InterfaceType(ComInterfaceType.InterfaceIsIUnknown)]
+$(if ($Windows1607) {@"
+// Windows 10 1607 and Server 2016:
 	[Guid("2C08ADF0-A386-4B35-9250-0FE183476FCC")]
+"@ })
+$(if ($Windows1803) {@"
+// Windows 10 1803:
+	[Guid("2C08ADF0-A386-4B35-9250-0FE183476FCC")]
+"@ })
+$(if ($Windows1809) {@"
+// Windows 10 1809:
+	[Guid("1841C6D7-4F9D-42C0-AF41-8747538F10E5")]
+"@ })
 	internal interface IApplicationViewCollection
 	{
 		int GetViews(out IObjectArray array);
@@ -153,7 +202,14 @@ $(if ($Windows1803) {@"
 		int GetViewInFocus(out IntPtr view);
 		void outreshCollection();
 		int RegisterForApplicationViewChanges(object listener, out int cookie);
+$(if ($Windows1607) {@"
+// Windows 10 1607 and Server 2016:
 		int RegisterForApplicationViewPositionChanges(object listener, out int cookie);
+"@ })
+$(if ($Windows1803) {@"
+// Windows 10 1803:
+		int RegisterForApplicationViewPositionChanges(object listener, out int cookie);
+"@ })
 		int UnregisterForApplicationViewChanges(int cookie);
 	}
 
@@ -485,7 +541,7 @@ $(if ($Windows1803) {@"
 "@
 
 # Clean up variables
-Remove-Variable -Name Windows1607,Windows1803
+Remove-Variable -Name Windows1607,Windows1803,Windows1809,OSVer,OSBuild
 
 
 function Get-DesktopCount
@@ -1389,7 +1445,10 @@ Get window handle of powershell console
 https://gallery.technet.microsoft.com/scriptcenter/Powershell-commands-to-d0e79cc5
 .NOTES
 Author: Markus Scholtes
-Created: 2017/05/08
+Created: 2018/10/22
 #>
-	return [VirtualDesktop.Desktop]::GetConsoleWindow()
+	if ([VirtualDesktop.Desktop]::GetConsoleWindow() -ne 0)
+	{ return [VirtualDesktop.Desktop]::GetConsoleWindow() }
+	else # maybe script is started in ISE
+	{ return (Get-Process -PID $PID).MainWindowHandle }
 }
