@@ -1,7 +1,6 @@
 function Initialize()
 	measureName = SKIN:GetMeasure(SELF:GetOption('MeasureName'))
 	autoRefresh = SELF:GetOption('AutoRefresh')*1 == 1
-	Generate(measureName:GetValue())
 	appCalc = SKIN:GetMeasure("AppVolumeCalc")
 end
 
