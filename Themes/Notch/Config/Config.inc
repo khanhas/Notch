@@ -11,8 +11,9 @@ Color_Scheme1 =101010
 Color_Scheme2 =FFFFFF
 Color_Scheme3 =FF6D70
 
-Font_Face=SF Pro Text Bold
+Font_Face=SF Pro Text
 Font_Size=11
+Font_Weight = 600
 
 SubSkinPadding = 20
 SubSkinCornerRadius = 20
