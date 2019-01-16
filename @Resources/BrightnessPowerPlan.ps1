@@ -27,6 +27,30 @@ function TurnOffMonitor {
     [Win32]::SendMessage(0xffff, 0x0112, 0xf170, 0x0002)
 }
 
+$themeRegKey = "hkcu:\Software\Microsoft\Windows\CurrentVersion\Themes\Personalize"
+$edgeThemRegKey = "hkcu:\Software\Classes\Local Settings\Software\Microsoft\Windows\CurrentVersion\AppContainer\Storage\microsoft.microsoftedge_8wekyb3d8bbwe\MicrosoftEdge\Main"
+function GetThemeMode {
+    $os = Get-ItemProperty "hklm:\SOFTWARE\Microsoft\Windows NT\CurrentVersion"
+    if ($os.ReleaseId -lt 1703) {
+        return -1
+    }
+
+    $theme = Get-ItemProperty $themeRegKey
+    return $theme.AppsUseLightTheme
+}
+
+function SetThemeMode([int]$mode) {
+    if ($mode -eq 0) {
+        Set-ItemProperty -Path $themeRegKey -Name AppsUseLightTheme -Value 0
+        Set-ItemProperty -Path $themeRegKey -Name SystemUsesLightTheme -Value 0
+        Set-ItemProperty -Path $edgeThemRegKey -Name Theme -Value 0
+    } else {
+        Set-ItemProperty -Path $themeRegKey -Name AppsUseLightTheme -Value 1
+        Set-ItemProperty -Path $themeRegKey -Name SystemUsesLightTheme -Value 1
+        Set-ItemProperty -Path $edgeThemRegKey -Name Theme -Value 1
+    }
+}
+
 function SetActivePlan($guid) {
     powercfg /setactive $guid
     SetPlanMeter
@@ -55,3 +79,4 @@ function SetPlanMeter {
 }
 
 SetPlanMeter
+GetThemeMode
