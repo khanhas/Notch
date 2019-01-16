@@ -8,7 +8,7 @@ Weather_Unit = C
 [Metadata]
 Name=Notch\\Weather
 Author=reddit.com/u/khanhas
-Description=Display current weather and temperature. Hover mouse on text for more information.
+Description=Fetch data from Yahoo Weather website. Display current weather and temperature. Hover mouse on text for more information.
 
 [WeatherAnchor]
 Measure=String
